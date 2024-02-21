@@ -1,7 +1,6 @@
 # Capstone 2024
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+This is the front-end UI for the Sports Predictor Software (Capstone Spring 2024: Group C)
 
 ## Running the application
 
