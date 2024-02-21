@@ -1,0 +1,17 @@
+@import url('./main-layout.css');
+@import url('./views/college-basketball-prediction-view.css');
+@import url('@fontsource/merriweather/index.css');    html {
+      --lumo-primary-color-50pct: hsla(214, 85%, 21%, 0.5);
+      --lumo-primary-color-10pct: hsla(214, 85%, 21%, 0.1);
+      --lumo-primary-color: hsl(214, 85%, 21%);
+--lumo-font-family: Merriweather;
+
+    }
+
+    [theme~="dark"] {
+      --lumo-primary-color-50pct: hsla(177, 75%, 46%, 0.5);
+      --lumo-primary-color-10pct: hsla(177, 75%, 46%, 0.1);
+      --lumo-primary-color: hsl(177, 75%, 46%);
+      --lumo-base-color: hsl(214, 26%, 15%);
+
+    }
