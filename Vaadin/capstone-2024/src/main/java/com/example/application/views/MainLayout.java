@@ -1,7 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.views.about.AboutView;
-import com.example.application.views.collegebasketballprediction.CollegeBasketballPredictionView;
+import com.example.application.views.collegebasketballprediction.CollegeBasketballPredictionsView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.Footer;
@@ -39,7 +39,7 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-        H1 appName = new H1("Capstone 2024");
+        H1 appName = new H1("College Basketball Prediction");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         Header header = new Header(appName);
 
@@ -51,7 +51,7 @@ public class MainLayout extends AppLayout {
     private SideNav createNavigation() {
         SideNav nav = new SideNav();
 
-        nav.addItem(new SideNavItem("College Basketball Prediction", CollegeBasketballPredictionView.class,
+        nav.addItem(new SideNavItem("Game Predictions", CollegeBasketballPredictionsView.class,
                 LineAwesomeIcon.BASKETBALL_BALL_SOLID.create()));
         nav.addItem(new SideNavItem("About", AboutView.class, LineAwesomeIcon.PEOPLE_CARRY_SOLID.create()));
 
