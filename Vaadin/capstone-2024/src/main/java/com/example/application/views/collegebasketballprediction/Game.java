@@ -1,5 +1,7 @@
 package com.example.application.views.collegebasketballprediction;
 
+import java.time.LocalDate;
+
 public class Game {
 
     private String homeTeam;
@@ -14,14 +16,17 @@ public class Game {
 
     private String awayPercent;
 
+    private LocalDate gameDate;
+
     public Game (String homeTeam, String awayTeam, String homeScore, String awayScore,
-                 String homePercent, String awayPercent) {
+                 String homePercent, String awayPercent, LocalDate gameDate) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.homeScore = homeScore;
         this.awayScore = awayScore;
         this.homePercent = homePercent;
         this.awayPercent = awayPercent;
+        this.gameDate = gameDate;
     }
 
     public String getHomeTeam()
@@ -52,5 +57,10 @@ public class Game {
     public String getPercents()
     {
         return homePercent + " - " + awayPercent;
+    }
+
+    // Getter for the gameDate
+    public LocalDate getGameDate() {
+        return gameDate;
     }
 }
