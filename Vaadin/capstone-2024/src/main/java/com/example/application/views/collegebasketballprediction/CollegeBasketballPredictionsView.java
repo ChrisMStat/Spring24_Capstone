@@ -20,14 +20,11 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
 
-<<<<<<< Updated upstream
-=======
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
->>>>>>> Stashed changes
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,49 +35,35 @@ import java.util.stream.Collectors;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-<<<<<<< Updated upstream
-=======
 import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
->>>>>>> Stashed changes
 
 @PageTitle("College Basketball Predictions")
 @Route(value = "home", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 @Uses(Icon.class)
 public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> {
-<<<<<<< Updated upstream
-=======
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
->>>>>>> Stashed changes
 
     public CollegeBasketballPredictionsView() {
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        DatePicker datePicker = new DatePicker();
-        ComboBox comboBox = new ComboBox();
-        H1 h1 = new H1();
-        Grid<Game> grid = new Grid();
+
+        // general page formatting
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
+
+        // This is the row that contains the date, conference, and search bars
+        HorizontalLayout layoutRow = new HorizontalLayout();
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
         layoutRow.setHeight("min-content");
-        datePicker.setLabel("Date picker");
-        datePicker.setWidth("min-content");
-        datePicker.setValue(LocalDate.now());
-        comboBox.setLabel("Combo Box");
-        comboBox.setWidth("min-content");
-        setComboBoxData(comboBox);
+
+        // HEADER: formatting and settings for the header
+        H1 h1 = new H1();
         h1.setText("Games");
         layoutRow.setAlignSelf(FlexComponent.Alignment.END, h1);
         h1.setWidth("max-content");
-<<<<<<< Updated upstream
-        grid.setWidth("100%");
-        grid.getStyle().set("flex-grow", "0");
-        setGridData(grid);
-=======
 
         // DATE SELECTOR: formatting and settings for the date selector object
         DatePicker datePicker = new DatePicker();
@@ -116,18 +99,10 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         updateGridData(LocalDate.now(), comboBox.getValue().toString()); // Update data immediately to grab games for today
 
         // Add and display everything to the page
->>>>>>> Stashed changes
         getContent().add(layoutRow);
         layoutRow.add(h1);
         layoutRow.add(datePicker);
         layoutRow.add(comboBox);
-<<<<<<< Updated upstream
-        layoutRow.add(h1);
-        getContent().add(grid);
-    }
-
-
-=======
         layoutRow.add(textField);
         getContent().add(grid);
     }
@@ -138,9 +113,9 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
      * dropdown selector box
      *
      **/
->>>>>>> Stashed changes
     private void setComboBoxData(ComboBox comboBox) {
 
+        // List of all conferences
         List<String> items = new ArrayList<>(
                 Arrays.asList("All", "American East", "American Athletic", "A-10",
                         "Atlantic Coast", "Atlantic Sun", "Big 12", "Big East", "Big Sky",
@@ -151,44 +126,25 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                         "Southern", "Southland", "Southwestern Athletic", "Summit League",
                         "Sun Belt", "West Coast", "Western Athletic"));
 
+        // add all conferences to box
         comboBox.setItems(items);
+
+        // default to option 1: 'ALL' conferences
         comboBox.setValue(items.get(0));
     }
 
-<<<<<<< Updated upstream
-
-
-    private void setGridData(Grid<Game> grid) {
-
-        // Have some data
-        List<Game> games = Arrays.asList(
-                new Game("Oklahoma", "Oklahoma State", "89", "102", "35%", "65%"),
-                new Game("Iowa State", "Cincinnati", "112", "101", "75%", "25%"),
-                new Game("Kansas", "Baylor", "134", "99", "82%", "18%"));
-=======
     /**
      *
      * Method to create game grid
      *
      **/
     private void setGridData(Grid<Game> grid) {
->>>>>>> Stashed changes
 
         // create columns and label headers
         grid.addColumn(Game::getTeams).setHeader("Game").setSortable(false).setKey("Teams");
         grid.addColumn(Game::getScores).setHeader("Score (Home - Visitor)").setSortable(false).setKey("Scores");
         grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
 
-<<<<<<< Updated upstream
-        grid.setItems(games);
-
-        // end::snippet[]
-    }
-
-
-
-
-=======
         // try and get games from .csv file
         try {
             games = loadGamesFromCSV("Schedule.csv");
@@ -254,7 +210,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         // return the full list of games
         return games;
     }
->>>>>>> Stashed changes
 
 
     /**
