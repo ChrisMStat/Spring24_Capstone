@@ -1,6 +1,10 @@
+package com.example.application.services; //so view can use
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.concurrent.CompletableFuture;
+
+
 
 @Service
 public class HttpClient { // Class name corrected to follow Java naming conventions

@@ -2,6 +2,9 @@ package com.example.application.views.collegebasketballprediction;
 
 import com.example.application.data.SamplePerson;
 import com.example.application.services.SamplePersonService;
+
+import com.example.application.services.HttpClient;
+
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -44,10 +47,14 @@ import java.io.InputStreamReader;
 @RouteAlias(value = "", layout = MainLayout.class)
 @Uses(Icon.class)
 public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> {
+
+    private HttpClient httpClient; //here for the service req
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
 
-    public CollegeBasketballPredictionsView() {
+    @Autowired
+    public CollegeBasketballPredictionsView(HttpClient httpClient) { //passing in the defined service
+         this.httpClient = httpClient; //declaring for use in this class
 
         // general page formatting
         getContent().setWidth("100%");
