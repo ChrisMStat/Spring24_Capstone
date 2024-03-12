@@ -7,7 +7,8 @@ class EloCalculator:
     def __init__(self, filename):
         self.elo_ratings = defaultdict(lambda: 1500)
         self.hta = 40 # Home Team Advantage, can be optimized
-        self.games = self._reformat_data_to_chronological(filename)
+        #self.games = self._reformat_data_to_chronological(filename)
+        self.process_games(filename)
 
     def _update_elo(self, ra, rb, outcome):
         K = 60  # Hyper-parameter, max change in elo, can be optimized
@@ -25,6 +26,20 @@ class EloCalculator:
     def _simulate_game_outcome(self, elo_a, elo_b):
         win_probability_a = self._calculate_win_probability(elo_a, elo_b)
         return random.random() < win_probability_a  # Returns True if team A wins, False otherwise
+    
+    # Go through each game
+    def process_games(self, filename):
+        self.chronological_games = self._reformat_data_to_chronological(filename)
+
+        for game in self.chronological_games:
+            team_a = game['team']
+            team_b = game['opponent']
+            outcome = game['outcome']
+
+            if outcome == 'W':
+                self.elo_ratings[team_a], self.elo_ratings[team_b] = self._update_elo(self.elo_ratings[team_a], self.elo_ratings[team_b], 'W')
+            else:
+                self.elo_ratings[team_b], self.elo_ratings[team_a] = self._update_elo(self.elo_ratings[team_b], self.elo_ratings[team_a], 'W')
 
     def _reformat_data_to_chronological(self, filename):
         with open(filename, 'r') as file:
@@ -52,7 +67,7 @@ class EloCalculator:
         return games
 
     def print_team_win_percentages(self):
-        for game in self.games:
+        for game in self.chronological_games:
             team_a = game['team']
             team_b = game['opponent']
             win_percentage_a = self.get_elo_win_percentage(team_a, team_b)
@@ -61,7 +76,7 @@ class EloCalculator:
             print(f"Opponent: {team_b}, Win Percentage: {win_percentage_b:.2f}%")
             print()
             
-        print(len(self.games))
+        print(len(self.chronological_games))
 
     def get_elo_win_percentage(self, team_a, team_b):
         elo_a = self.elo_ratings[team_a]
