@@ -126,5 +126,5 @@ def predict(model, new_instance_data):
 
     # Make prediction
     prediction = model.predict(new_instance_X)
-
+    #Each element in the prediction array is the predicted outcome of a game, based on the features provided in new_instance_data
     return prediction
