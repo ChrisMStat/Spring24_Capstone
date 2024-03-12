@@ -42,6 +42,14 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+
+//NEW IMPORT 
+import com.vaadin.flow.component.textfield.TextArea;
+import java.util.concurrent.CompletableFuture;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+
+
 @PageTitle("College Basketball Predictions")
 @Route(value = "home", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
@@ -49,12 +57,39 @@ import java.io.InputStreamReader;
 public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> {
 
     private HttpClient httpClient; //here for the service req
+    private TextArea jsonOutput; 
+
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
 
     @Autowired
     public CollegeBasketballPredictionsView(HttpClient httpClient) { //passing in the defined service
          this.httpClient = httpClient; //declaring for use in this class
+         // Initialization of jsonOutput
+        jsonOutput = new TextArea("JSON Output");
+        jsonOutput.setWidth("100%");
+        jsonOutput.setHeight("300px"); // Adjust the height as needed
+        getContent().add(jsonOutput); // Add the TextArea to your layout
+
+
+
+
+        //Testing the text layout NEW
+        // Create a button and add it to the layout
+        Button showInfoButton = new Button("Show Info");
+        getContent().add(showInfoButton); // Add the button to your main layout
+
+        // Button click listener
+        showInfoButton.addClickListener(event -> {
+           try {
+        // Attempt to fetch data and display it
+        fetchDataAndDisplayJson(jsonOutput);
+          } catch (Exception e) {
+          // If fetching data fails, display an error message
+        jsonOutput.setValue("Error displaying JSON");
+       }
+        }); //new button end
+
 
         // general page formatting
         getContent().setWidth("100%");
@@ -113,6 +148,21 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         layoutRow.add(textField);
         getContent().add(grid);
     }
+
+     private void fetchDataAndDisplayJson(TextArea jsonOutput) {
+     try {
+        CompletableFuture<String> jsonFuture = httpClient.fetchDataFromFlask("https://legendary-umbrella-4pgvr4vxqqwf5x9-5000.app.github.dev/rankings");
+        jsonFuture.thenAccept(json -> UI.getCurrent().access(() -> jsonOutput.setValue(json)))
+                  .exceptionally(ex -> {
+                      UI.getCurrent().access(() -> jsonOutput.setValue("Failed to fetch data: " + ex.getMessage()));
+                      return null;
+                  });
+    } catch (Exception e) {
+        UI.getCurrent().access(() -> jsonOutput.setValue("Failed to initiate data fetch: " + e.getMessage()));
+    }
+        } //method for connection
+
+
 
     /**
      *
