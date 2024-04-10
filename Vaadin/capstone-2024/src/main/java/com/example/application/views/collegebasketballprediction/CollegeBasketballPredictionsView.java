@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+
 
 
 //NEW IMPORT 
@@ -48,6 +48,11 @@ import com.vaadin.flow.component.textfield.TextArea;
 import java.util.concurrent.CompletableFuture;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+
+//NEW IMPORT FOR fetchDataAndDisplayJson
+import java.net.HttpURLConnection;
+import java.net.URL;
+import javafx.scene.control.TextArea; // For JavaFX
 
 
 @PageTitle("College Basketball Predictions")
