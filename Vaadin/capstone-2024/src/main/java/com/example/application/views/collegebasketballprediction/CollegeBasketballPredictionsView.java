@@ -149,18 +149,61 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         getContent().add(grid);
     }
 
-     private void fetchDataAndDisplayJson(TextArea jsonOutput) {
-     try {
-        CompletableFuture<String> jsonFuture = httpClient.fetchDataFromFlask("https://legendary-umbrella-4pgvr4vxqqwf5x9-5000.app.github.dev/rankings");
-        jsonFuture.thenAccept(json -> UI.getCurrent().access(() -> jsonOutput.setValue(json)))
-                  .exceptionally(ex -> {
-                      UI.getCurrent().access(() -> jsonOutput.setValue("Failed to fetch data: " + ex.getMessage()));
-                      return null;
-                  });
-    } catch (Exception e) {
-        UI.getCurrent().access(() -> jsonOutput.setValue("Failed to initiate data fetch: " + e.getMessage()));
-    }
-        } //method for connection
+    //  private void fetchDataAndDisplayJson(TextArea jsonOutput) {
+    //  try {
+    //     CompletableFuture<String> jsonFuture = httpClient.fetchDataFromFlask("https://legendary-umbrella-4pgvr4vxqqwf5x9-5000.app.github.dev/rankings");
+    //     jsonFuture.thenAccept(json -> UI.getCurrent().access(() -> jsonOutput.setValue(json)))
+    //               .exceptionally(ex -> {
+    //                   UI.getCurrent().access(() -> jsonOutput.setValue("Failed to fetch data: " + ex.getMessage()));
+    //                   return null;
+    //               });
+    // } catch (Exception e) {
+    //     UI.getCurrent().access(() -> jsonOutput.setValue("Failed to initiate data fetch: " + e.getMessage()));
+    // }
+    //     } //method for connection
+        private void fetchDataAndDisplayJson( final TextArea jsonOutput )	{
+    		//CompletableFuture<String> jsonFuture = httpClient.fetchDataFromFlask("https://legendary-umbrella-4pgvr4vxqqwf5x9-5000.app.github.dev/rankings");
+            //jsonFuture.thenAccept(json -> UI.getCurrent().access(() -> jsonOutput.setValue(json)))
+            //          .exceptionally(ex -> {
+            //              UI.getCurrent().access(() -> jsonOutput.setValue("Failed to fetch data: " + ex.getMessage()));
+            //              return null;
+            //          });
+    		HttpURLConnection conn = null;
+    		try {
+    			final URL url = new URL( "http://localhost:5000/rankings" );
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod( "GET" );
+                conn.setRequestProperty( "Accept", "application/json" );
+    
+                if( conn.getResponseCode() != 200 ) {
+                    throw new RuntimeException( "Failed : HTTP error code : "
+                            + conn.getResponseCode() );
+                }
+    
+    			final StringBuilder sb = new StringBuilder();
+                try ( final BufferedReader br = new BufferedReader( 
+    					new InputStreamReader( conn.getInputStream() ) ) ) {
+    				String output;
+    				while( (output = br.readLine() ) != null ) {
+    					sb.append( output );
+    				}
+    				jsonOutput.setValue( sb.toString() );
+    			}
+    			catch( final Exception e ) {
+    				jsonOutput.setValue( "Failed to initiate data fetch: " + e.getMessage() );
+    				e.printStackTrace();
+    			}
+            }
+    		catch( final Exception e ) {
+    			jsonOutput.setValue( "Failed to initiate data fetch: " + e.getMessage() );
+                e.printStackTrace();
+            }
+    		finally {
+    			if( conn != null ) {
+    				conn.disconnect();
+    			}
+    		}
+        }
 
 
 
