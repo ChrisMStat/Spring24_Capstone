@@ -156,8 +156,8 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
         // create columns and label headers
         grid.addColumn(Game::getTeams).setHeader("Game").setSortable(false).setKey("Teams");
-        grid.addColumn(Game::getScores).setHeader("Predicted Score (Home - Visitor)").setSortable(false).setKey("Scores");
-        grid.addColumn(Game::getScores).setHeader("Actual Score (Home - Visitor)").setSortable(false).setKey("Scores");
+        grid.addColumn(Game::getScores).setHeader("Predicted Score (Home - Visitor)").setSortable(false).setKey("Predicted Scores");
+        grid.addColumn(Game::getScores).setHeader("Actual Score (Home - Visitor)").setSortable(false).setKey("Actual Scores");
         grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
 
         // try and get games from .csv file
