@@ -4,21 +4,14 @@ import java.time.LocalDate;
 
 public class Game {
 
-    private String homeTeam;
-
-    private String awayTeam;
-
-    private String homeScore;
-
-    private String awayScore;
-
-    private String homePercent;
-
-    private String awayPercent;
-
-    private LocalDate gameDate;
-
-    private String conference;
+    private String homeTeam; // home team name
+    private String awayTeam; // away team name
+    private String homeScore; // home team score
+    private String awayScore; // away team score
+    private String homePercent; // home team win percent
+    private String awayPercent; // away team win percent
+    private LocalDate gameDate; // date of game
+    private String conference; // home team conference name
 
     public Game (String homeTeam, String awayTeam, String homeScore, String awayScore,
                  String homePercent, String awayPercent, LocalDate gameDate, String conference) {
