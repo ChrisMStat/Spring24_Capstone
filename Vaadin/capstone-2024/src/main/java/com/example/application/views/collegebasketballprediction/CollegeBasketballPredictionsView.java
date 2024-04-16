@@ -100,7 +100,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         textField.setLabel("Search for a Team");
         textField.setWidth("min-content");
 
-
         /********************************
          *
          * GAME GRID
@@ -109,7 +108,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
          * the grid that displays all of the basketball games
          *
          ********************************/
-
 
         // GAME GRID: formatting and settings and initialization
         grid = new Grid();
@@ -138,7 +136,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         // default conference to option 1: 'ALL'
         comboBox.setValue(items.get(0));
 
-
         /********************************
          *
          * ACTION LISTENERS
@@ -152,7 +149,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue()));
         comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(),textField.getValue()));
         textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue()));
-
 
         /**********************************
          *
@@ -192,8 +188,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
         // create columns and label headers
         grid.addColumn(Game::getTeams).setHeader("Game").setSortable(false).setKey("Teams");
-        grid.addColumn(Game::getScores).setHeader("Predicted Score (Home - Visitor)").setSortable(false).setKey("Predicted Scores");
-        grid.addColumn(Game::getScores).setHeader("Actual Score (Home - Visitor)").setSortable(false).setKey("Actual Scores");
+        grid.addColumn(Game::getScores).setHeader("Score (Home - Visitor)").setSortable(false).setKey("Scores");
         grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
 
         // try and get games from .csv file
@@ -207,7 +202,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
         // put games in grid
         grid.setItems(games);
-
     }
 
     /**********************************
@@ -223,9 +217,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
         // list for games
         List<Game> games = new ArrayList<>();
-
-        // list for conferences (for the combobox)
-        //conferenceNames = new ArrayList<>();
 
         // get file
         ClassPathResource resource = new ClassPathResource("Schedule.csv");
@@ -270,7 +261,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         // return the full list of games
         return games;
     }
-
 
     /**********************************
      *
