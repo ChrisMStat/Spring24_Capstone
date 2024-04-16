@@ -46,16 +46,24 @@ import java.io.InputStreamReader;
 public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> {
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
+    private static List<String> conferenceNames = new ArrayList<>(); // list to hold all conferences names
 
-    private static List<String> conferenceNames;
 
     public CollegeBasketballPredictionsView() {
 
-        // general page formatting
+        /********************************
+         *
+         * INITIAL PAGE SETUP
+         *
+         * General Page setup and formatting settings
+         *
+         ********************************/
+
+        // page formatting
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
 
-        // This is the row that contains the date, conference, and search bars
+        // LAYOUT: This is the row that contains the date, conference, and search bars
         HorizontalLayout layoutRow = new HorizontalLayout();
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
@@ -66,6 +74,15 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         h1.setText("Games");
         layoutRow.setAlignSelf(FlexComponent.Alignment.END, h1);
         h1.setWidth("max-content");
+
+        /********************************
+         *
+         * OPTION BOXES
+         *
+         * I.e. the Date Selector, the Conference Selector, and
+         * the Search Bar for finding a specific team
+         *
+         ********************************/
 
         // DATE SELECTOR: formatting and settings for the date selector object
         DatePicker datePicker = new DatePicker();
@@ -84,10 +101,14 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         textField.setWidth("min-content");
 
 
-        // action listeners for date, conference, and team search
-        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue().toString()));
-        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(), textField.getValue().toString()));
-        textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue().toString()));
+        /********************************
+         *
+         * GAME GRID
+         *
+         * I.e. the settings for creating
+         * the grid that displays all of the basketball games
+         *
+         ********************************/
 
 
         // GAME GRID: formatting and settings and initialization
@@ -95,10 +116,60 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         grid.setWidth("100%");
         grid.getStyle().set("flex-grow", "0");
         setGridData(grid); // Reads in data and adds to grid
-        setComboBoxData(comboBox); // Call another method to fill in the information for the conferences
-        updateGridData(LocalDate.now(), comboBox.getValue().toString(), textField.getValue().toString()); // Update data immediately to grab games for today
 
-        // Add and display everything to the page
+        /********************************
+         *
+         * CONFERENCE NAMES
+         *
+         * Adds all of the conference names from the .csv file to
+         * the dropdown option box
+         *
+         * These names are found in the .csv. The .csv file is read
+         * in the loadGamesFromCSV method which is called in the
+         * setGridData method
+         *
+         ********************************/
+
+        // CONFERENCE LIST: add list of conferences to combo box dropdown
+        final List items = new ArrayList<>( conferenceNames );
+        items.add( 0, "ALL" );
+        comboBox.setItems( items );
+
+        // default conference to option 1: 'ALL'
+        comboBox.setValue(items.get(0));
+
+
+        /********************************
+         *
+         * ACTION LISTENERS
+         *
+         * These are what "update" which games are displayed
+         * based on the user-selected conference, date, etc.
+         *
+         ********************************/
+
+        // ACTION LISTENERS: for date, conference, and team search
+        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue()));
+        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(),textField.getValue()));
+        textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue()));
+
+
+        /**********************************
+         *
+         * UPDATE GRID AND DISPLAY ENTIRE PAGE
+         *
+         * Update the page now that everything is created and loaded correctly.
+         *
+         * It will use default filter/option values.
+         * I.e. it will use today's date, the 'ALL' conference option,
+         * and the search bar is empty
+         *
+         *********************************/
+
+        // Update data immediately to grab games for today
+        updateGridData(datePicker.getValue(), comboBox.getValue().toString(), textField.getValue());
+
+        // DISPLAY: Add and display everything to the page
         getContent().add(layoutRow);
         layoutRow.add(h1);
         layoutRow.add(datePicker);
@@ -107,51 +178,16 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         getContent().add(grid);
     }
 
-    /**
+    /**********************************
      *
-     * Method to fill in the information for the conferences
-     * dropdown selector box
+     * setGridData()
      *
-     **/
-    private void setComboBoxData(ComboBox comboBox) {
-
-        // List of all conferences for debuggin
-        /*
-        List<String> items = new ArrayList<>(
-                Arrays.asList("All", "American East", "American Athletic", "A-10",
-                        "Atlantic Coast", "Atlantic Sun", "Big 12", "Big East", "Big Sky",
-                        "Big South", "Big Ten", "Big West", "Colonial Athletic", "Conference USA",
-                        "Horizon", "Independents (DI)", "Ivy League", "Metro Atlantic Athletic",
-                        "Mid-American", "Mid-Eastern", "Missouri Valley", "Mountain West",
-                        "Northeast", "Ohio Valley", "Pac-12", "Patriot League", "Southeastern",
-                        "Southern", "Southland", "Southwestern Athletic", "Summit League",
-                        "Sun Belt", "West Coast", "Western Athletic"));
-
-         */
-
-        // List of conferences
-        List<String> items = new ArrayList<>();
-        items.add("All"); // add an All Conferences option
-
-        // add each conference name from the .csv (these values were grabbed when the grid
-        // is created through the loadGamesFromCSV method)
-        for (int i = 1; i < conferenceNames.size(); i++)
-        {
-            items.add(conferenceNames.get(i));
-        }
-
-        // add all conferences to box
-        comboBox.setItems(items);
-
-        // default to option 1: 'ALL' conferences
-        comboBox.setValue(items.get(0));
-    }
-
-    /**
+     * Create the Grid by reading data from the .csv file
+     * This grid is what displays the basketball games and all of their
+     * associated data (i.e. score, win percent, etc.)
      *
-     * Method to create game grid
-     *
-     **/
+     **********************************/
+
     private void setGridData(Grid<Game> grid) {
 
         // create columns and label headers
@@ -174,25 +210,26 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
     }
 
-    /**
+    /**********************************
      *
-     * Method to load in .csv file to get the list of games
+     * loadGamesFromCSV()
+     *
+     * load in .csv file to get the list of games
      * and all of their data/information
      *
-     *
-     **/
+     **********************************/
+
     public static List<Game> loadGamesFromCSV(String filePath) throws IOException {
 
         // list for games
         List<Game> games = new ArrayList<>();
 
         // list for conferences (for the combobox)
-        conferenceNames = new ArrayList<>();
+        //conferenceNames = new ArrayList<>();
 
         // get file
         ClassPathResource resource = new ClassPathResource("Schedule.csv");
         InputStream inputStream = resource.getInputStream();
-
 
         // try and get the data for each game
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -235,18 +272,16 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
     }
 
 
-    /**
+    /**********************************
      *
-     * Method to update the games in the grid based on the
+     * updateGridData()
+     *
+     * update the games in the grid based on the
      * date and selected conference
      *
-     *
-     **/
+     **********************************/
+
     private void updateGridData(LocalDate selectedDate, String conference, String search) {
-
-        // System.out.println("here: " + selectedDate); // debug
-        //System.out.println("here: " + selectedDate + ", " + conference + ", " + search); // debug
-
 
         // if the search bar contains any text
         if (search != null)
@@ -255,7 +290,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
             if (selectedDate != null && conference != null) {
 
                 // a conference other than "All" has been selected
-                if (conference != "All")
+                if (!"ALL".equalsIgnoreCase( conference ))
                 {
                     List<Game> filteredGames = games.stream()
                             .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference)) && ((game.getHomeTeam().contains(search)) || (game.getAwayTeam().contains(search)))))
@@ -281,7 +316,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
             if (selectedDate != null && conference != null) {
 
                 // a conference other than "All" has been selected
-                if (conference != "All")
+                if (!"ALL".equalsIgnoreCase( conference ))
                 {
                     List<Game> filteredGames = games.stream()
                             .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference))))
@@ -300,10 +335,6 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
             } else {
                 grid.setItems((Game) null); // Clear the grid or handle a null date as needed
             }
-
         }
-
-
     }
-
 }
