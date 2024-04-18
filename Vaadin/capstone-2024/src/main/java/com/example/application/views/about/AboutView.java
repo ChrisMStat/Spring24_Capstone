@@ -55,7 +55,7 @@ public class AboutView extends VerticalLayout {
         aboutLayout.setAlignItems(Alignment.CENTER);
 
 
-        Paragraph linearRegressionParagraph = new Paragraph("Linear Regression: By utilizing a linear regression model, " +
+        Paragraph linearRegressionParagraph = new Paragraph("Logistic Regression: By utilizing a logistic regression model, " +
                 "we analyze past game data to identify patterns and relationships between various game factors " +
                 "(like team performance, player statistics, and home advantage) and the game outcomes.");
         linearRegressionParagraph.getStyle().set("font-size", "18px");
@@ -65,7 +65,7 @@ public class AboutView extends VerticalLayout {
         linearRegressionLayout.setWidthFull();
         linearRegressionLayout.setAlignItems(Alignment.CENTER);
 
-        Paragraph eloRankingParagraph = new Paragraph("ELO Ranking: Complementing our linear regression model, " +
+        Paragraph eloRankingParagraph = new Paragraph("ELO Ranking: Complementing our logistic regression model, " +
                 "we utilize the ELO ranking system to gauge the relative skill levels of teams. " +
                 "The ELO system adjusts a team's rating based on game results, factoring in the opponent's strength for each match. " +
                 "This dynamic ranking provides a reflection of a team's performance level, " +
@@ -77,7 +77,7 @@ public class AboutView extends VerticalLayout {
         eloRankingLayout.setWidthFull();
         eloRankingLayout.setAlignItems(Alignment.CENTER);
 
-        VerticalLayout thirdRow = new VerticalLayout(linearRegressionParagraph, eloRankingParagraph);
+        VerticalLayout thirdRow = new VerticalLayout(aboutParagraph, linearRegressionParagraph, eloRankingParagraph);
         thirdRow.setWidthFull();
         thirdRow.setAlignItems(Alignment.CENTER);
         thirdRow.getStyle().set("max-width", "800px");
