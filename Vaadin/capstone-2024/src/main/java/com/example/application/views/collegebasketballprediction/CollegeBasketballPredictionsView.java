@@ -4,20 +4,16 @@ import com.example.application.data.SamplePerson;
 import com.example.application.services.SamplePersonService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -50,14 +46,24 @@ import java.io.InputStreamReader;
 public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> {
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
+    private static List<String> conferenceNames = new ArrayList<>(); // list to hold all conferences names
+
 
     public CollegeBasketballPredictionsView() {
 
-        // general page formatting
+        /********************************
+         *
+         * INITIAL PAGE SETUP
+         *
+         * General Page setup and formatting settings
+         *
+         ********************************/
+
+        // page formatting
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
 
-        // This is the row that contains the date, conference, and search bars
+        // LAYOUT: This is the row that contains the date, conference, and search bars
         HorizontalLayout layoutRow = new HorizontalLayout();
         layoutRow.addClassName(Gap.MEDIUM);
         layoutRow.setWidth("100%");
@@ -69,40 +75,97 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         layoutRow.setAlignSelf(FlexComponent.Alignment.END, h1);
         h1.setWidth("max-content");
 
+        /********************************
+         *
+         * OPTION BOXES
+         *
+         * I.e. the Date Selector, the Conference Selector, and
+         * the Search Bar for finding a specific team
+         *
+         ********************************/
+
         // DATE SELECTOR: formatting and settings for the date selector object
         DatePicker datePicker = new DatePicker();
         datePicker.setLabel("Select Date");
         datePicker.setWidth("min-content");
         datePicker.setValue(LocalDate.now());
-        //datePicker.addValueChangeListener(event -> updateGridData(event.getValue()));
 
         // CONFERENCE SELECTOR: formatting and settings for the conference dropdown selector object
         ComboBox comboBox = new ComboBox();
         comboBox.setLabel("Select Conference");
         comboBox.setWidth("min-content");
-        setComboBoxData(comboBox); // Call another method to fill in the information for the conferences
 
         // TEAM SEARCH BAR: formatting and settings for the conference dropdown selector object
         TextField textField = new TextField();
         textField.setLabel("Search for a Team");
         textField.setWidth("min-content");
 
-
-        // action listeners for date, conference, and team search
-        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString()));
-        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString()));
-        //textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(), textField.getValue().toString()));
-
-
+        /********************************
+         *
+         * GAME GRID
+         *
+         * I.e. the settings for creating
+         * the grid that displays all of the basketball games
+         *
+         ********************************/
 
         // GAME GRID: formatting and settings and initialization
         grid = new Grid();
         grid.setWidth("100%");
         grid.getStyle().set("flex-grow", "0");
         setGridData(grid); // Reads in data and adds to grid
-        updateGridData(LocalDate.now(), comboBox.getValue().toString()); // Update data immediately to grab games for today
 
-        // Add and display everything to the page
+        /********************************
+         *
+         * CONFERENCE NAMES
+         *
+         * Adds all of the conference names from the .csv file to
+         * the dropdown option box
+         *
+         * These names are found in the .csv. The .csv file is read
+         * in the loadGamesFromCSV method which is called in the
+         * setGridData method
+         *
+         ********************************/
+
+        // CONFERENCE LIST: add list of conferences to combo box dropdown
+        final List items = new ArrayList<>( conferenceNames );
+        items.add( 0, "ALL" );
+        comboBox.setItems( items );
+
+        // default conference to option 1: 'ALL'
+        comboBox.setValue(items.get(0));
+
+        /********************************
+         *
+         * ACTION LISTENERS
+         *
+         * These are what "update" which games are displayed
+         * based on the user-selected conference, date, etc.
+         *
+         ********************************/
+
+        // ACTION LISTENERS: for date, conference, and team search
+        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue()));
+        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(),textField.getValue()));
+        textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue()));
+
+        /**********************************
+         *
+         * UPDATE GRID AND DISPLAY ENTIRE PAGE
+         *
+         * Update the page now that everything is created and loaded correctly.
+         *
+         * It will use default filter/option values.
+         * I.e. it will use today's date, the 'ALL' conference option,
+         * and the search bar is empty
+         *
+         *********************************/
+
+        // Update data immediately to grab games for today
+        updateGridData(datePicker.getValue(), comboBox.getValue().toString(), textField.getValue());
+
+        // DISPLAY: Add and display everything to the page
         getContent().add(layoutRow);
         layoutRow.add(h1);
         layoutRow.add(datePicker);
@@ -111,99 +174,45 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         getContent().add(grid);
     }
 
-    /**
+    /**********************************
      *
-     * Method to fill in the information for the conferences
-     * dropdown selector box
+     * setGridData()
      *
-     **/
-    private void setComboBoxData(ComboBox comboBox) {
-
-        // List of all conferences
-        List<String> items = new ArrayList<>(
-                Arrays.asList("All", "American East", "American Athletic", "A-10",
-                        "Atlantic Coast", "Atlantic Sun", "Big 12", "Big East", "Big Sky",
-                        "Big South", "Big Ten", "Big West", "Colonial Athletic", "Conference USA",
-                        "Horizon", "Independents (DI)", "Ivy League", "Metro Atlantic Athletic",
-                        "Mid-American", "Mid-Eastern", "Missouri Valley", "Mountain West",
-                        "Northeast", "Ohio Valley", "Pac-12", "Patriot League", "Southeastern",
-                        "Southern", "Southland", "Southwestern Athletic", "Summit League",
-                        "Sun Belt", "West Coast", "Western Athletic"));
-
-        // add all conferences to box
-        comboBox.setItems(items);
-
-        // default to option 1: 'ALL' conferences
-        comboBox.setValue(items.get(0));
-    }
-
-    /**
+     * Create the Grid by reading data from the .csv file
+     * This grid is what displays the basketball games and all of their
+     * associated data (i.e. score, win percent, etc.)
      *
-     * Method to create game grid
-     *
-     **/
+     **********************************/
+
     private void setGridData(Grid<Game> grid) {
+
         // create columns and label headers
-        grid.addColumn(new ComponentRenderer<>(game -> {
-            Accordion accordion = new Accordion();
-            AccordionPanel panel = accordion.add(game.getTeams(), new Span("Click to load details..."));
-            accordion.close(); // Ensure the accordion starts closed
+        grid.addColumn(Game::getTeams).setHeader("Game").setSortable(false).setKey("Teams");
+        grid.addColumn(Game::getScores).setHeader("Score (Home - Visitor)").setSortable(false).setKey("Scores");
+        grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
 
-            accordion.addOpenedChangeListener(event -> {
-                if (event.getOpenedPanel().isPresent() && event.getOpenedPanel().get() == panel) {
-                    // calculate win percentage gradient
-                    String gradientStyle = getGradientStyle(game.getPercents());
-
-                    Span dateSpan = new Span("Date: " + game.getGameDate().toString());
-                    Span winPercentSpan = new Span("Win %: " + game.getPercents());
-                    Span locationSpan = new Span("Location: " + game.getLocation());
-
-                    VerticalLayout detailsLayout = new VerticalLayout(dateSpan, winPercentSpan, locationSpan);
-                    detailsLayout.getStyle().set("background", "default");
-
-                    // detailsLayout.getStyle().set("background", gradientStyle);
-
-                    panel.setContent(detailsLayout);
-                }
-            });
-            return accordion;
-        })).setHeader("Game").setSortable(false).setKey("Teams");
-
-        // grid.addColumn(Game::getScores).setHeader("Score (Home - Visitor)").setSortable(false).setKey("Scores");
-        // grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
-
+        // try and get games from .csv file
         try {
             games = loadGamesFromCSV("Schedule.csv");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        System.out.println("here: " + games.size()); // debug check size of games list
+
         // put games in grid
         grid.setItems(games);
     }
 
-    private String getGradientStyle(String winPercents) {
-        if (winPercents == null) return "";
-
-        try {
-            String[] percents = winPercents.split(" - ");
-            double homeWinPercent = Double.parseDouble(percents[0].replace("%", ""));
-            double visitorWinPercent = Double.parseDouble(percents[1].replace("%", ""));
-            return String.format("linear-gradient(to right, red %f%%, blue %f%%)", homeWinPercent, visitorWinPercent);
-        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-            // Handle potential format errors
-            e.printStackTrace();
-            return "";
-        }
-    }
-
-    /**
+    /**********************************
      *
-     * Method to load in .csv file to get the list of games
+     * loadGamesFromCSV()
+     *
+     * load in .csv file to get the list of games
      * and all of their data/information
      *
-     *
-     **/
+     **********************************/
+
     public static List<Game> loadGamesFromCSV(String filePath) throws IOException {
 
         // list for games
@@ -225,6 +234,10 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                 if (values.length == 2) {
                     homeTeam = values[0];
                     conference = values[1]; // Not using this right now, can check against the combobox
+                    if (!conferenceNames.contains(conference))
+                    {
+                        conferenceNames.add(conference);
+                    }
                 }
 
                 // Read lines that have game data (not byes), and where the home team is at home
@@ -249,41 +262,69 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         return games;
     }
 
-
-    /**
+    /**********************************
      *
-     * Method to update the games in the grid based on the
+     * updateGridData()
+     *
+     * update the games in the grid based on the
      * date and selected conference
      *
-     *
-     **/
-    private void updateGridData(LocalDate selectedDate, String conference) {
-        // System.out.println("here: " + selectedDate); // debug
+     **********************************/
 
-        System.out.println("here: " + selectedDate + ", " + conference); // debug
+    private void updateGridData(LocalDate selectedDate, String conference, String search) {
 
+        // if the search bar contains any text
+        if (search != null)
+        {
+            // if a date and conference have both been selected
+            if (selectedDate != null && conference != null) {
 
+                // a conference other than "All" has been selected
+                if (!"ALL".equalsIgnoreCase( conference ))
+                {
+                    List<Game> filteredGames = games.stream()
+                            .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference)) && ((game.getHomeTeam().contains(search)) || (game.getAwayTeam().contains(search)))))
+                            .collect(Collectors.toList());
+                    grid.setItems(filteredGames);
+                }
 
-        // Grab the sublist of games from the selected date
-        if (selectedDate != null && conference != null) {
-
-            if (conference != "All")
-            {
-                List<Game> filteredGames = games.stream()
-                        .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference))))
-                                .collect(Collectors.toList());
-                grid.setItems(filteredGames);
+                // otherwise just grab the games on the specified date
+                else
+                {
+                    List<Game> filteredGames = games.stream()
+                            .filter(game -> (game.getGameDate().equals(selectedDate)) && ((game.getHomeTeam().contains(search)) || (game.getAwayTeam().contains(search))))
+                            .collect(Collectors.toList());
+                    grid.setItems(filteredGames);
+                }
+            } else {
+                grid.setItems((Game) null); // Clear the grid or handle a null date as needed
             }
-            else
-            {
-                List<Game> filteredGames = games.stream()
-                        .filter(game -> game.getGameDate().equals(selectedDate))
-                        .collect(Collectors.toList());
-                grid.setItems(filteredGames);
+        }
+        else {
+
+            // Grab the sublist of games from the selected date and conference
+            if (selectedDate != null && conference != null) {
+
+                // a conference other than "All" has been selected
+                if (!"ALL".equalsIgnoreCase( conference ))
+                {
+                    List<Game> filteredGames = games.stream()
+                            .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference))))
+                            .collect(Collectors.toList());
+                    grid.setItems(filteredGames);
+                }
+
+                // otherwise just grab the games on the specified date
+                else
+                {
+                    List<Game> filteredGames = games.stream()
+                            .filter(game -> game.getGameDate().equals(selectedDate))
+                            .collect(Collectors.toList());
+                    grid.setItems(filteredGames);
+                }
+            } else {
+                grid.setItems((Game) null); // Clear the grid or handle a null date as needed
             }
-        } else {
-            grid.setItems((Game) null); // Clear the grid or handle a null date as needed
         }
     }
-
 }
