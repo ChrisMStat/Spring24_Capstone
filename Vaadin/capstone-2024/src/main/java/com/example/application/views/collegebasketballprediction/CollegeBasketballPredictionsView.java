@@ -4,16 +4,20 @@ import com.example.application.data.SamplePerson;
 import com.example.application.services.SamplePersonService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.accordion.Accordion;
+import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -178,7 +182,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
      *
      * setGridData()
      *
-     * Create the Grid by reading data from the .csv file
+     * Create the Accordion Grid by reading data from the .csv file
      * This grid is what displays the basketball games and all of their
      * associated data (i.e. score, win percent, etc.)
      *
@@ -187,21 +191,69 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
     private void setGridData(Grid<Game> grid) {
 
         // create columns and label headers
-        grid.addColumn(Game::getTeams).setHeader("Game").setSortable(false).setKey("Teams");
-        grid.addColumn(Game::getScores).setHeader("Score (Home - Visitor)").setSortable(false).setKey("Scores");
-        grid.addColumn(Game::getPercents).setHeader("Win % (Home - Visitor)").setSortable(false).setKey("Percent");
+        grid.addColumn(new ComponentRenderer<>(game -> {
+            Accordion accordion = new Accordion();
+            AccordionPanel panel = accordion.add(game.getTeams(), new Span("Click to load details..."));
+            accordion.close(); // Ensure the accordion starts closed
 
-        // try and get games from .csv file
+            accordion.addOpenedChangeListener(event -> {
+                if (event.getOpenedPanel().isPresent() && event.getOpenedPanel().get() == panel) {
+
+                    // calculate win percentage gradient
+                    String gradientStyle = getGradientStyle(game.getPercents());
+
+                    Span dateSpan = new Span("Date: " + game.getGameDate().toString());
+                    Span winPercentSpan = new Span("Win %: " + game.getPercents());
+                    Span locationSpan = new Span("Location: " + game.getLocation());
+
+                    VerticalLayout detailsLayout = new VerticalLayout(dateSpan, winPercentSpan, locationSpan);
+
+                    // DEFAULT: This is for default color styling (i.e. plain background)
+                    detailsLayout.getStyle().set("background", "default");
+
+                    // COLOR: This is to color code the accordion drop down.
+                    // It is currently coloring the entire accordion dropdown
+                    //detailsLayout.getStyle().set("background", gradientStyle);
+
+                    panel.setContent(detailsLayout);
+                }
+            });
+            return accordion;
+        })).setHeader("Game").setSortable(false).setKey("Teams");
+
+        // try and load games from .csv file
         try {
             games = loadGamesFromCSV("Schedule.csv");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("here: " + games.size()); // debug check size of games list
-
         // put games in grid
         grid.setItems(games);
+    }
+
+    /**********************************
+     *
+     * getGradientStyle()
+     *
+     * This is to color code the games for a
+     * better user experience. It is NOT used when using
+     * the default color styling in setGridData()
+     *
+     **********************************/
+
+    private String getGradientStyle(String winPercents) {
+        if (winPercents == null) return "";
+        try {
+            String[] percents = winPercents.split(" - ");
+            double homeWinPercent = Double.parseDouble(percents[0].replace("%", ""));
+            double visitorWinPercent = Double.parseDouble(percents[1].replace("%", ""));
+            return String.format("linear-gradient(to right, red %f%%, blue %f%%)", homeWinPercent, visitorWinPercent);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            // Handle potential format errors
+            e.printStackTrace();
+            return "";
+        }
     }
 
     /**********************************
