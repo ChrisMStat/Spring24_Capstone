@@ -43,6 +43,21 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+
+//new imports for http 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import org.json.JSONObject;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+
+
 @PageTitle("College Basketball Predictions")
 @Route(value = "home", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
@@ -54,6 +69,8 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
 
     public CollegeBasketballPredictionsView() {
+        //calling function to get JSON OBJECT NOTE: not sure if it needs to be stored here for this view to access it
+        initHttpConnectionAndLoadData();
 
         /********************************
          *
@@ -177,6 +194,63 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         layoutRow.add(textField);
         getContent().add(grid);
     }
+
+    // METHOD FOR THE JSON OBJECT
+    private void initHttpConnectionAndLoadData() {
+            HttpURLConnection conn = null;
+        try {
+            final URL url = new URL("http://localhost:5000/rankings");
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed: HTTP error code: " + conn.getResponseCode());
+            }
+
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                String output;
+                while ((output = br.readLine()) != null) {
+                    sb.append(output);
+                }
+            }
+            // change JSONObject to JSONArray
+            JSONArray jsonArray = new JSONArray(sb.toString());
+            Files.write(Paths.get("rankings.json"), sb.toString().getBytes());
+
+            
+            System.out.println("JSON Array Response: " + jsonArray.toString());
+
+        } catch (JSONException e) {
+            System.out.println("Error processing JSON response: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("I/O error: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+    } //end of json 
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
 
     /**********************************
      *
