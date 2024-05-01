@@ -66,17 +66,43 @@ class EloCalculator:
 
         return games
 
-    def print_team_win_percentages(self):
+    # def print_team_win_percentages(self):
+    #     for game in self.chronological_games:
+    #         team_a = game['team']
+    #         team_b = game['opponent']
+    #         win_percentage_a = self.get_elo_win_percentage(team_a, team_b)
+    #         win_percentage_b = 100 - win_percentage_a  # Opponent's win percentage
+    #         print(f"Team: {team_a}, Win Percentage: {win_percentage_a:.2f}%")
+    #         print(f"Opponent: {team_b}, Win Percentage: {win_percentage_b:.2f}%")
+    #         print()
+            
+    #     print(len(self.chronological_games))
+    def print_team_win_percentages_to_json(self, output_file):
+        game_win_percentages = []  # List to hold win percentages for all games
+
         for game in self.chronological_games:
             team_a = game['team']
             team_b = game['opponent']
             win_percentage_a = self.get_elo_win_percentage(team_a, team_b)
             win_percentage_b = 100 - win_percentage_a  # Opponent's win percentage
-            print(f"Team: {team_a}, Win Percentage: {win_percentage_a:.2f}%")
-            print(f"Opponent: {team_b}, Win Percentage: {win_percentage_b:.2f}%")
-            print()
             
-        print(len(self.chronological_games))
+            # Append this game's info as a dictionary
+            game_win_percentages.append({
+                "team": team_a,
+                "win_percentage": f"{win_percentage_a:.2f}%",
+                "opponent": team_b,
+                "opponent_win_percentage": f"{win_percentage_b:.2f}%"
+            })
+
+        # Add total games information
+        summary = {"total_games": len(self.chronological_games)}
+        game_win_percentages.append(summary)
+
+        # Write to a JSON file
+        with open(output_file, 'w') as file:
+            json.dump(game_win_percentages, file, indent=4)
+
+
 
     def get_elo_win_percentage(self, team_a, team_b):
         elo_a = self.elo_ratings[team_a]
@@ -85,10 +111,8 @@ class EloCalculator:
         return win_probability_a * 100  # Return win percentage for team A
 
 
-# Example usage:
 if __name__ == "__main__":
     filename = 'Schedule-Formatted.json'
+    output_file = 'win_percentages.json'  # Note the change to a .json extension
     elo_calculator = EloCalculator(filename)
-    elo_calculator.print_team_win_percentages()
-
-
+    elo_calculator.print_team_win_percentages_to_json(output_file)

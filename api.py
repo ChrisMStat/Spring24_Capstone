@@ -12,7 +12,7 @@ def load_rankings(file_path):
     return rankings
 
 
-rankings = load_rankings('team_rankings_top_10.json')
+rankings = load_rankings('win_percentages.json')
 
 
 @app.route('/rankings', methods=['GET'])
