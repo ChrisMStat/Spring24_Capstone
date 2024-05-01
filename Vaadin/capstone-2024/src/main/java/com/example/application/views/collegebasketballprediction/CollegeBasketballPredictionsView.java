@@ -1,7 +1,5 @@
 package com.example.application.views.collegebasketballprediction;
 
-import com.example.application.data.SamplePerson;
-import com.example.application.services.SamplePersonService;
 import com.example.application.views.MainLayout;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.accordion.Accordion;
@@ -21,9 +19,7 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,8 +38,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-
 //new imports for http 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -56,8 +50,6 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-
-
 @PageTitle("College Basketball Predictions")
 @Route(value = "home", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
@@ -68,11 +60,18 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
     private List<Game> games; // list to hold all games
     private Grid<Game> grid; // the grid to display the games
     private static List<String> conferenceNames = new ArrayList<>(); // list to hold all conferences names
+    private static JSONArray jsonArray; // this is what will contain the prediction results (see method initHttpConnectionAndLoadData())
 
+    /**********************************
+     *
+     * CollegeBasketballPredictionsView()
+     *
+     * This is the main constructor.
+     *
+     *
+     **********************************/
 
     public CollegeBasketballPredictionsView() {
-        //calling function to get JSON OBJECT NOTE: not sure if it needs to be stored here for this view to access it
-        initHttpConnectionAndLoadData();
 
         /********************************
          *
@@ -94,7 +93,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
 
         // HEADER: formatting and settings for the header
         H1 h1 = new H1();
-        h1.setText("Games");
+        h1.setText("2022-2023 Games");
         layoutRow.setAlignSelf(FlexComponent.Alignment.END, h1);
         h1.setWidth("max-content");
 
@@ -142,7 +141,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
          *
          * CONFERENCE NAMES
          *
-         * Adds all of the conference names from the .csv file to
+         * Adds all the conference names from the .csv file to
          * the dropdown option box
          *
          * These names are found in the .csv. The .csv file is read
@@ -169,9 +168,9 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
          ********************************/
 
         // ACTION LISTENERS: for date, conference, and team search
-        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue()));
-        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(),textField.getValue()));
-        textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue()));
+        datePicker.addValueChangeListener(event -> updateGridData(event.getValue(), comboBox.getValue().toString(), textField.getValue().toLowerCase()));
+        comboBox.addValueChangeListener(event -> updateGridData(datePicker.getValue(), event.getValue().toString(),textField.getValue().toLowerCase()));
+        textField.addValueChangeListener(event -> updateGridData(datePicker.getValue(), comboBox.getValue().toString(), event.getValue().toLowerCase()));
 
         /**********************************
          *
@@ -197,7 +196,16 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         getContent().add(grid);
     }
 
-     // METHOD FOR THE JSON OBJECT
+    /**********************************
+     *
+     * initHttpConnectionAndLoadData()
+     *
+     * This method is what gets the prediction results
+     * from api.py. To ensure this works as intended when running,
+     * please see the README.md
+     *
+     **********************************/
+
     private void initHttpConnectionAndLoadData() {
             HttpURLConnection conn = null;
         try {
@@ -218,11 +226,11 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                 }
             }
             // change JSONObject to JSONArray
-            JSONArray jsonArray = new JSONArray(sb.toString());
+            jsonArray = new JSONArray(sb.toString());
             Files.write(Paths.get("rankings.json"), sb.toString().getBytes());
 
-            
-            System.out.println("JSON Array Response: " + jsonArray.toString());
+            // DEBUGGING
+            //System.out.println("JSON Array Response: " + jsonArray.toString());
 
         } catch (JSONException e) {
             System.out.println("Error processing JSON response: " + e.getMessage());
@@ -233,12 +241,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                 conn.disconnect();
             }
         }
-    } //end of json 
-
-
-
-
-
+    }
 
     /**********************************
      *
@@ -246,11 +249,15 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
      *
      * Create the Accordion Grid by reading data from the .csv file
      * This grid is what displays the basketball games and all of their
-     * associated data (i.e. score, win percent, etc.)
+     * associated data (i.e. score, win percents, etc.)
      *
      **********************************/
 
     private void setGridData(Grid<Game> grid) {
+
+        // calling function to get JSON OBJECT
+        // this function is what gets the prediction results from api.py
+        initHttpConnectionAndLoadData();
 
         // create columns and label headers
         grid.addColumn(new ComponentRenderer<>(game -> {
@@ -264,11 +271,11 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                     // calculate win percentage gradient
                     String gradientStyle = getGradientStyle(game.getPercents());
 
-                    Span dateSpan = new Span("Date: " + game.getGameDate().toString());
-                    Span winPercentSpan = new Span("Win %: " + game.getPercents());
-                    Span locationSpan = new Span("Location: " + game.getLocation());
+                    Span dateSpan = new Span("Date: " + game.getGameDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+                    Span winPercentSpan = new Span("Win Percentage: " + game.getPercents());
+                    Span actualScore = new Span("Actual Score: " + game.getScores());
 
-                    VerticalLayout detailsLayout = new VerticalLayout(dateSpan, winPercentSpan, locationSpan);
+                    VerticalLayout detailsLayout = new VerticalLayout(dateSpan, winPercentSpan, actualScore);
 
                     // DEFAULT: This is for default color styling (i.e. plain background)
                     detailsLayout.getStyle().set("background", "default");
@@ -325,6 +332,10 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
      * load in .csv file to get the list of games
      * and all of their data/information
      *
+     * This method also handles the JSON array parsing.
+     * The JSON array containing ALL the prediction results is stepped
+     * through to load in the correction prediction percentages for each game and team
+     *
      **********************************/
 
     public static List<Game> loadGamesFromCSV(String filePath) throws IOException {
@@ -332,22 +343,36 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
         // list for games
         List<Game> games = new ArrayList<>();
 
-        // get file
+        // get csv file
         ClassPathResource resource = new ClassPathResource("Schedule.csv");
         InputStream inputStream = resource.getInputStream();
 
-        // try and get the data for each game
+        /*
+        *
+        * The below code will try and read in each game from the csv file one-by-one to
+        * get the needed information (date, team names, score, conference).
+        * Then, for each game, the prediction JSON array (which has already been loaded in)
+        * is checked to find matching team names with the currently read line from the csv file.
+        * If a match is found, then the correct prediction results are passed along for that game,
+        * and the next line of the csv is read in.
+        *
+        **/
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             String homeTeam = "";
             String conference = "";
+
+            // read in each line of the csv one-by-one (each line is one game)
             while ((line = br.readLine()) != null) {
+
                 String[] values = line.split(",");
 
                 // Capture the home team and their conference
                 if (values.length == 2) {
                     homeTeam = values[0];
-                    conference = values[1]; // Not using this right now, can check against the combobox
+                    conference = values[1];
+
+                    // if the conferences does not already exist, add the new conference to the list
                     if (!conferenceNames.contains(conference))
                     {
                         conferenceNames.add(conference);
@@ -359,9 +384,41 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                     String awayTeam = values[4];
                     String homeScore = values[6]; // Grabbing final score
                     String awayScore = values[7]; // ^
-                    String homeWinPercentage = "50%"; // Placeholder win percentage
-                    String awayWinPercentage = "50%"; // ^
+                    String homeWinPercentage = "??%"; // Placeholder win percentage
+                    String awayWinPercentage = "??%"; // ^
                     LocalDate gameDate = LocalDate.parse(values[1], DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+
+                    // Now, parse through the JSON array containing the prediction results to find this game's predictions
+                    for (int i = 0; i < jsonArray.length(); i++) {
+
+                        // get one game from the array corresponding to the current index, i
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                        // the currently selected team name (i.e. home team)
+                        String team = jsonObject.getString("team");
+
+                        // the currently selected opponent (i.e. away team)
+                        String opponent = jsonObject.getString("opponent");
+
+                        // the corresponding prediction result for the home team
+                        String win_percentage = jsonObject.getString("win_percentage");
+
+                        // the corresponding prediction result for the away team
+                        String opponent_win_percentage = jsonObject.getString("opponent_win_percentage");
+
+                        // check that the currently selected teams from the JSON array are the SAME teams as the currently
+                        // selected game from the csv
+                        if (homeTeam.equals(team) && awayTeam.equals(opponent))
+                        {
+                            // DEBUGGING
+                            //System.out.println("\nSUCCESS IF.... homeTeam = " + homeTeam + " ; current team = " + team + " ; awayTeam = " + awayTeam + " ; opponent = " + opponent + "\n");
+
+                            // sets the predicted results for each team
+                            homeWinPercentage = win_percentage;
+                            awayWinPercentage = opponent_win_percentage;
+                            break; // we have found a match (i.e. the teams/games from the JSON array and csv are the same)
+                        }
+                    }
 
                     // Create Game object and add to games list
                     games.add(new Game(homeTeam, awayTeam, homeScore, awayScore, homeWinPercentage, awayWinPercentage,
@@ -397,7 +454,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                 if (!"ALL".equalsIgnoreCase( conference ))
                 {
                     List<Game> filteredGames = games.stream()
-                            .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference)) && ((game.getHomeTeam().contains(search)) || (game.getAwayTeam().contains(search)))))
+                            .filter(game -> (game.getGameDate().equals(selectedDate) && (game.getConference().contains(conference)) && ((game.getHomeTeam().toLowerCase().contains(search)) || (game.getAwayTeam().toLowerCase().contains(search)))))
                             .collect(Collectors.toList());
                     grid.setItems(filteredGames);
                 }
@@ -406,7 +463,7 @@ public class CollegeBasketballPredictionsView extends Composite<VerticalLayout> 
                 else
                 {
                     List<Game> filteredGames = games.stream()
-                            .filter(game -> (game.getGameDate().equals(selectedDate)) && ((game.getHomeTeam().contains(search)) || (game.getAwayTeam().contains(search))))
+                            .filter(game -> (game.getGameDate().equals(selectedDate)) && ((game.getHomeTeam().toLowerCase().contains(search)) || (game.getAwayTeam().toLowerCase().contains(search))))
                             .collect(Collectors.toList());
                     grid.setItems(filteredGames);
                 }
