@@ -13,8 +13,6 @@ public class Game {
     private LocalDate gameDate; // date of game
     private String conference; // home team conference name
 
-    private String location;
-
     public Game (String homeTeam, String awayTeam, String homeScore, String awayScore,
                  String homePercent, String awayPercent, LocalDate gameDate, String conference) {
         this.homeTeam = homeTeam;
@@ -25,11 +23,6 @@ public class Game {
         this.awayPercent = awayPercent;
         this.gameDate = gameDate;
         this.conference = conference;
-        this.location = location;
-    }
-    // Getter for played location
-    public String getLocation() {
-        return location;
     }
 
     // Getter for home team name

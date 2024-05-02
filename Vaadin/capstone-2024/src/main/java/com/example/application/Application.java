@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
  * Use the @PWA annotation make the application installable on phones, tablets
  * and some desktop browsers.
  *
- * Author(s): Christopher Statton
+ * Author(s): Group C
  * Spring 2024
  * Capstone Class
  *
